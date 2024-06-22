@@ -1,0 +1,3 @@
+/home/nathanial/Workspace/SkipShiftGrabber/cmake-build-debug/CMakeFiles/color.dir
+/home/nathanial/Workspace/SkipShiftGrabber/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/nathanial/Workspace/SkipShiftGrabber/cmake-build-debug/CMakeFiles/rebuild_cache.dir
