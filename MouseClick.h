@@ -12,23 +12,14 @@
 #include <xcb/xcb.h>
 
 #include <libinput.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <iostream>
 
 
-void simulateMouseClick(int button, int x, int y)
+void simulateMouseClick(Display *display, int button, int x, int y)
 {
-    Display* display = XOpenDisplay(NULL);
-    if (!display) {
-        std::cerr << "Failed to open display!" << std::endl;
-        return;
-    }
 
     int event_base, error_base;
 //    if (!XTestQueryExtension(display, &event_base, &error_base, NULL, NULL)) {

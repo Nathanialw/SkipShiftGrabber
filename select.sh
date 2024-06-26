@@ -7,12 +7,13 @@ xdotool click 1
 
 #xdotool mousemove 1802 1402
 xdotool mousemove $3 $4
+xdotool click 1
 
-for ((i = 0; i < (5 + $RANDOM % 7); i++))
+for ((i = 0; i < (10 + $RANDOM % 7); i++))
 do
 #  sleep (1 + $RANDOM % 7) / 100
   xdotool click 1
-  sleep .01
+  sleep .001
 done
 
 #sleep 1

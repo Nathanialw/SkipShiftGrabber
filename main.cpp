@@ -6,36 +6,38 @@
 #include "vector"
 #include "chrono"
 
-void PushButton(Display *display, Window root, int x, int y) {
-    std::cout << "clicking" << std::endl;
+void PushButton(Display *display, int x, int y) {
+//    std::cout << "clicking" << std::endl;
 
-    XWarpPointer(display, None, root, 0, 0, 0, 0, x, y);
-    XFlush(display);
 
-    simulateMouseClick(1, x, y);
+    simulateMouseClick(display, 1, x, y);
 
-    sleep(1);
+//    sleep(1);
 }
 
 bool CheckPixdelWeston(char *hex, const std::string &green, int x, int y, int x2, int y2) {
-    if (strcmp(hex, "#FAFAFA") == 0) {
+    if (strcmp(hex, "#FAFAFA") == 0 || strcmp(hex, "#172026") == 0) {
         return true;
     }
 
     if (strcmp(hex, green.c_str()) == 0) {  //color code for use scrcpy when the screen is dimmed/unplugged
         Display *display = XOpenDisplay(0);
-        Window root = DefaultRootWindow(display);
+//        Window root = DefaultRootWindow(display);
 
         // Create an XEvent structure
-        PushButton(display, root, (x + 50), y);
-        std::cout << "Found pixel: " << hex << ", " << x << " " << y << std::endl;
+        PushButton(display, (x + 50), y);
+
+//        std::cout << "Found pixel: " << hex << ", " << x << " " << y << std::endl;
+        XFlush(display);
 
         int i = 0;
-        while (i < 20) {
-            PushButton(display, root, (x2), y2);
+        while (i < 15) {
+            PushButton(display, (x2), y2);
             i++;
-//            usleep(50);
+            usleep(50000);
         }
+
+
         XCloseDisplay(display);
         return true;
     }
@@ -136,7 +138,8 @@ bool checkColor(int x, int y, int x2, int y2, char *hex, const std::vector<std::
     }
     else {
         for (auto &c : color) {
-            if (CheckPixdel(hex, c, x, y, x2, y2)) {return true;};
+//            if (CheckPixdel(hex, c, x, y, x2, y2)) {return true;};
+            if (CheckPixdelWeston(hex, c, x, y, x2, y2)) {return true;};
         }
     }
     return false;
@@ -146,35 +149,37 @@ int main() {
     int i = 0;
     auto win = GetWindowID();
     std::vector<std::string> share = {"#1CD478", "#1CD479", "#1DD478", "#1DD479", "#1FD27C", "#1ED378"};
-    std::vector<std::string> weston = {"#1DD377"}; //weston
-    std::vector<std::string> westonSpinner = {"#FAFAFA", "#25343F", "#24323D", "#26353F", "#E7E7E7"}; //weston
+    std::vector<std::string> weston = {"#1DD377", "#1BC670"}; //weston
+    std::vector<std::string> westonSpinner = {"#FAFAFA"}; //weston
     std::vector<std::string> spinner = {"#FAFAFA"};
     // check if the spinner color is on
 
     int active = 1;
     int activeChecks = 20;
     bool bShare = false;
+//    bool bShare = true;
 
-    auto t = std::chrono::system_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch()).count();
+//    auto t = std::chrono::system_clock::now();
+//    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch()).count();
 
-    int count = abs(rand() % 8 - 35);
-    if (count == 0) {
-        bShare = true;
+    int count = abs(rand() % 8 - 58);
+    if (!bShare) {
+        if (count == 0) {
+        }
     }
 
     while (i < 100000000) {
-        if (count == 0) {
+        if (!bShare && count == 0) {
             count = abs(rand() % 35 - 8);
             for (int j = 0; j < 5; j++) {
                 int longms = abs(rand() % 200 - 100) ;
                 std::string shell = "/home/nathanial/Workspace/SkipShiftGrabber/swipe.sh";
                 std::system(shell.c_str());
                 sleep(longms);
-                std::cout << longms << std::endl;
+//                std::cout << longms << std::endl;
             }
+//            std::cout << count << std::endl;
         }
-        std::cout << count << std::endl;
 
         if (active == 0) {
             count--;
@@ -184,7 +189,7 @@ int main() {
                 int ms;
                 if (timerType == 0) {
                     ms = abs(rand() %  2000000 - 1000000);
-                    std::cout << ms << std::endl;
+//                    std::cout << ms << std::endl;
                 }
                     //                else if (timerType == 1) {
 //                    ms = rand() % 1000000 - 3000000;
@@ -194,7 +199,7 @@ int main() {
 //                    ms = rand() % 1000000 - 5000000;
 //                }
                 //make int positive
-                std::cout << ms << std::endl;
+//                std::cout << ms << std::endl;
                 if (ms < 0) {
                     ms = ms * -1;
                 }
@@ -204,7 +209,7 @@ int main() {
 
                 usleep(200000);
                 auto hex = getpixelcol(win, 1970, 220);
-                std::cout << hex << std::endl;
+//                std::cout << hex << std::endl;
                 if (checkColor(1970, 220, 0, 0, hex, westonSpinner, bShare)) {
                     active = activeChecks;
                 }
@@ -222,17 +227,22 @@ int main() {
         if (bShare)
         {
             if (active > 0) {
-                int x = 1560;// Pixel x
-                int y = 385; // Pixel y
-                while (y < 1355) {
-                    auto hex = getpixelcol(win, x, y);
-                    if (checkColor(x, y, 1795, 1352, hex, share, bShare)) {
+                int openshiftx = 1560;// Pixel x
+                int openshifty = 385; // Pixel y
+                int confirmx = 1795; // Pixel y
+                int confirmy = 1352; // Pixel y
+                int spinnerx = 1883;
+                int spinnery = 272;
+
+                while (openshifty < 1355) {
+                    auto hex = getpixelcol(win, openshiftx, openshifty);
+                    if (checkColor(openshiftx, openshifty, confirmx, confirmy, hex, share, bShare)) {
                         break;
                     };
-                    y += 145;
+                    openshifty += 145;
                 }
-                auto hex = getpixelcol(win, 1883, 272);
-                if (checkColor(1883, 272, 0, 0, hex, spinner, bShare)) {
+                auto hex = getpixelcol(win, spinnerx, spinnery);
+                if (checkColor(spinnerx, spinnery, 0, 0, hex, spinner, bShare)) {
                     active = activeChecks;
                 }
                 active--;
@@ -240,18 +250,45 @@ int main() {
         }
         else {
             if (active > 0) {
-                int x = 1697;// Pixel x
-                int y = 260; // Pixel y
-                while (y < 1400) {
-                    auto hex = getpixelcol(win, x, y);
-                    if (checkColor(x, y, 1905, 1424, hex, weston, bShare)) {
+                // framework click placement
+                int openshiftx = 1697;// Pixel x
+                int openshifty = 260; // Pixel y
+                int confirmx = 1905; // Pixel y
+                int confirmy = 1424; // Pixel y
+                int spinnerx = 1977;
+                int spinnery = 231;
+                int closex = 1728;
+                int closey = 155;
+
+                while (openshifty < 1400) {
+                    auto hex = getpixelcol(win, openshiftx, openshifty);
+                    if (strcmp(hex, "#263540") == 1) {
+                    }
+
+                    if (checkColor(openshiftx, openshifty, confirmx, confirmy, hex, weston, bShare)) {
+                        usleep(1500000);
+                        auto hex2 = getpixelcol(win, closex, closey);
+                        if (checkColor(closex, closey, 0, 0, hex2, weston, bShare)) {
+                            std::cout << hex2 << std::endl;
+                            std::cout << "shift already taken" << std::endl;
+                            Display *display = XOpenDisplay(0);
+                            PushButton(display, 2017, 400);
+                            usleep(500000);
+                            PushButton(display, closex, closey);
+                            XFlush(display);
+                            XCloseDisplay(display);
+                        }
+                        else {
+                            std::cout << hex2 << std::endl;
+                            std::cout << "shift grabbed" << std::endl;
+                        }
                         active = 0;
                         break;
                     };
-                    y += 100;
+                    openshifty += 100;
                 }
-                auto hex = getpixelcol(win, 1977, 231);
-                if (checkColor(1977, 231, 0, 0, hex, spinner, bShare)) {
+                auto hex = getpixelcol(win, spinnerx, spinnery);
+                if (checkColor(spinnerx, spinnery, 0, 0, hex, spinner, bShare)) {
                     active = activeChecks;
                 }
                 active--;
